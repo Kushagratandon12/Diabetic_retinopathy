@@ -1,3 +1,5 @@
+train/
+val/
 #Environments
 env/
 .vscode/
