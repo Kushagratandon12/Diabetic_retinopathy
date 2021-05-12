@@ -1,5 +1,6 @@
 train/
 val/
+diab_model.h5
 #Environments
 env/
 .vscode/

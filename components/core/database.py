@@ -1,16 +1,35 @@
-# def decode_img(image_path):
-#     img = tf.keras.preprocessing.image.load_img(
-#         image_path, target_size=(shape))
-#     img = tf.keras.preprocessing.image.smart_resize(img, shape)
-#     img = tf.keras.preprocessing.image.img_to_array(
-#         img)  # converted to ndarray
-#     img = img.astype(np.float32)/255.0
-#     img = np.expand_dims(img, axis=0)
-#     return img
+import cv2
+import numpy as np
+from os import readlink
+from bson.objectid import ObjectId
+from flask_pymongo import PyMongo, MongoClient
+from bson.objectid import ObjectId
+
+# MongoDb Details
+client = MongoClient(
+    'mongodb+srv://Kushagra:samkush#@cluster0.p9ece.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+db = client.get_database('myFirstDatabase')
+files = db.fs.files
+chunks = db.fs.chunks
 
 
 def save_users_images(mongo, image, username):
     mongo.save_file(image.filename, image)
     mongo.db.Diabetic.insert(
-        {'username': username, 'diab_image': image.filename})
+        {'username': username, 'filename': image.filename})
     return True
+
+
+def get_user_data(mongo, username):
+    filename = (mongo.db.Diabetic.find_one_or_404(
+        {'username': username}))['filename']
+    return filename
+
+
+def get_user_image_id(mongo, username):
+    files_id = list(files.find({'filename': get_user_data(mongo, username)}))
+    image_id = (files_id[0])['_id']
+    result = list(chunks.find(
+        {"files_id": ObjectId(image_id)}))
+    image_bytes = result[0]['data']
+    return image_bytes

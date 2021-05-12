@@ -1,12 +1,14 @@
+import gridfs
 from flask import Flask, request
-from flask.helpers import url_for
 from flask_pymongo import PyMongo
-from components.core.database import save_users_images
-from PIL import Image
+# IMPORTING FROM MY FUNCTIONS
+from components.core.database import save_users_images, get_user_data, get_user_image_id
+from components.model.model_predict import model_pred
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb+srv://Kushagra:samkush#@cluster0.p9ece.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 mongo = PyMongo(app)
+
 
 # SAVE THE USER INFORMATION TO MONGO_DB
 
@@ -24,11 +26,20 @@ def save_user_diabetic():
 # GET THE USER INFORMATION FROM MONGO_DB
 
 @app.route('/get_information', methods=['POST'])
-def show_user_diabetic():
+def show_user_info():
     user_name = request.values['user_name']
-    user = mongo.db.Diabetic.find_one_or_404({'username': user_name})
-    filename = user['diab_image']
+    filename = get_user_data(mongo, user_name)
     return mongo.send_file(filename)
+
+
+@app.route('/predict', methods=['POST'])
+def predict_info():
+    user_name = request.values['user_name']
+    filename = get_user_data(mongo, user_name)
+    images_byte = get_user_image_id(mongo, user_name)
+    res = model_pred(images_byte)
+    # print(res)
+    return 'The Stage Of Diabetic You Are At is {}'.format(res), 200
 
 
 if __name__ == '__main__':
