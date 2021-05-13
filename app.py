@@ -1,4 +1,3 @@
-import gridfs
 from flask import Flask, request
 from flask_pymongo import PyMongo
 # IMPORTING FROM MY FUNCTIONS
@@ -19,8 +18,11 @@ def save_user_diabetic():
         return 'Send Your Post Request Here'
     image = request.files['image']
     user_name = request.values['user_name']
+    # check if the user name is already registerd or not  -> database
+    # flag_user = check_dublicate_user(mongo, user_name)
+    # print(flag_user)
     save_users_images(mongo, image, user_name)
-    return 'Working', 200
+    return 'User Registration Completed.', 200
 
 
 # GET THE USER INFORMATION FROM MONGO_DB
