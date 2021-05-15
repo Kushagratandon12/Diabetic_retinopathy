@@ -1,13 +1,16 @@
 import os
-from dotenv import load_dotenv
 from flask import Flask, request
 from flask_pymongo import PyMongo
+from dotenv.main import load_dotenv
 # IMPORTING FROM MY FUNCTIONS
 from components.model.model_predict import model_pred
 from components.core.database import save_users_images, get_user_data, get_user_image_id, get_user_id
-load_dotenv()
-# MongoDB Details Saved In ENV
+
+
+# MongoDB Details Are Saved In ENV File
+load_dotenv('/components/utils/.env')
 MONGO_DB_CREDENTIAL = os.getenv('MONGO_DB_CREDENTIAL')
+
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = MONGO_DB_CREDENTIAL

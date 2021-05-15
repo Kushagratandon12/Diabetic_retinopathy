@@ -1,10 +1,16 @@
+import os
 from bson.objectid import ObjectId
+from bson.objectid import ObjectId
+from dotenv.main import load_dotenv
 from flask_pymongo import MongoClient
-from bson.objectid import ObjectId
 
-# MongoDb Details
-client = MongoClient(
-    'mongodb+srv://Kushagra:samkush#@cluster0.p9ece.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+
+# MongoDB Details Saved In ENV
+load_dotenv('../utils/.env')
+MONGO_DB_CREDENTIAL = os.getenv('MONGO_DB_CREDENTIAL')
+
+
+client = MongoClient(MONGO_DB_CREDENTIAL)
 db = client.get_database('myFirstDatabase')
 diabetic = db.Diabetic['username']
 files = db.fs.files
