@@ -1,13 +1,17 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, request
 from flask_pymongo import PyMongo
 # IMPORTING FROM MY FUNCTIONS
-from components.core.database import save_users_images, get_user_data, get_user_image_id
 from components.model.model_predict import model_pred
+from components.core.database import save_users_images, get_user_data, get_user_image_id, get_user_id
+load_dotenv()
+# MongoDB Details Saved In ENV
+MONGO_DB_CREDENTIAL = os.getenv('MONGO_DB_CREDENTIAL')
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = 'mongodb+srv://Kushagra:samkush#@cluster0.p9ece.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+app.config['MONGO_URI'] = MONGO_DB_CREDENTIAL
 mongo = PyMongo(app)
-
 
 # SAVE THE USER INFORMATION TO MONGO_DB
 
@@ -18,11 +22,9 @@ def save_user_diabetic():
         return 'Send Your Post Request Here'
     image = request.files['image']
     user_name = request.values['user_name']
-    # check if the user name is already registerd or not  -> database
-    # flag_user = check_dublicate_user(mongo, user_name)
-    # print(flag_user)
     save_users_images(mongo, image, user_name)
-    return 'User Registration Completed.', 200
+    id = get_user_id(mongo, user_name)
+    return 'User Registration Completed with Image Id {}'.format(id), 200
 
 
 # GET THE USER INFORMATION FROM MONGO_DB
