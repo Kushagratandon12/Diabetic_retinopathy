@@ -1,11 +1,19 @@
+import os
 from flask import Flask, request
-from flask.helpers import url_for
 from flask_pymongo import PyMongo
-from components.core.database import save_users_images
-from PIL import Image
+from dotenv.main import load_dotenv
+# IMPORTING FROM MY FUNCTIONS
+from components.model.model_predict import model_pred
+from components.core.database import save_users_images, get_user_data, get_user_image_id, get_user_id
+
+
+# MongoDB Details Are Saved In ENV File
+load_dotenv('/components/utils/.env')
+MONGO_DB_CREDENTIAL = os.getenv('MONGO_DB_CREDENTIAL')
+
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = 'mongodb+srv://Kushagra:samkush#@cluster0.p9ece.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+app.config['MONGO_URI'] = MONGO_DB_CREDENTIAL
 mongo = PyMongo(app)
 
 # SAVE THE USER INFORMATION TO MONGO_DB
@@ -18,17 +26,27 @@ def save_user_diabetic():
     image = request.files['image']
     user_name = request.values['user_name']
     save_users_images(mongo, image, user_name)
-    return 'Working', 200
+    id = get_user_id(mongo, user_name)
+    return 'User Registration Completed with Image Id {}'.format(id), 200
 
 
 # GET THE USER INFORMATION FROM MONGO_DB
 
 @app.route('/get_information', methods=['POST'])
-def show_user_diabetic():
+def show_user_info():
     user_name = request.values['user_name']
-    user = mongo.db.Diabetic.find_one_or_404({'username': user_name})
-    filename = user['diab_image']
+    filename = get_user_data(mongo, user_name)
     return mongo.send_file(filename)
+
+
+@app.route('/predict', methods=['POST'])
+def predict_info():
+    user_name = request.values['user_name']
+    filename = get_user_data(mongo, user_name)
+    images_byte = get_user_image_id(mongo, user_name)
+    res = model_pred(images_byte)
+    # print(res)
+    return 'The Stage Of Diabetic You Are At is {}'.format(res), 200
 
 
 if __name__ == '__main__':
